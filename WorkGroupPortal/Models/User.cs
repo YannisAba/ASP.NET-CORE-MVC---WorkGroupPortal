@@ -19,7 +19,7 @@ public partial class User
     public string Email { get; set; } = null!;
 
     [StringLength(255)]
-    public string PasswordHash { get; set; } = null!;
+    public string Password { get; set; } = null!;
 
     [Column(TypeName = "datetime")]
     public DateTime CreatedAt { get; set; }
