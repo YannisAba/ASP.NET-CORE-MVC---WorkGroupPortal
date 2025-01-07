@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using WorkGroupPortal.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // My DI for EF
-builder.Services.AddDbContext<LabDBContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+/*builder.Services.AddDbContext<LabDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));*/
 
 var app = builder.Build();
 
