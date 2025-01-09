@@ -18,6 +18,250 @@ namespace WorkGroupPortal.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public IActionResult AvailableContacts()
+        {
+            // getting UserId from Session
+            var userIdString = HttpContext.Session.GetString("UserId");
+
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int userId = int.Parse(userIdString);
+
+                // Finding user's Id
+                var user = _context.Users.FirstOrDefault(c => c.Id == userId);
+
+                if (user != null)
+                {
+                    // Get all users except the current user
+                    var users = _context.Users
+                        .Where(u => u.Id != user.Id)
+                        .ToList();
+
+                    // Load all contact statuses for the current user
+                    var contactStatuses = _context.Contacts
+                        .Where(c => c.UserId == user.Id && c.Status != "Accepted")
+                        .ToDictionary(c => c.ContactId, c => c.Status);
+
+
+                    ViewBag.ContactStatuses = contactStatuses;
+                    ViewBag.CurrentUser = user;
+
+                    return View(users);
+                }
+            }
+            TempData["ErrorMessage"] = "You must log in first.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SendRequest(int contactId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Check if a contact request already exists
+            var existingRequest = _context.Contacts
+                .FirstOrDefault(c => c.UserId == userId && c.ContactId == contactId);
+
+            if (existingRequest == null)
+            {
+                // Create a new contact request
+                var contact = new Contact
+                {
+                    UserId = userId,
+                    ContactId = contactId,
+                    Status = "Pending"
+                };
+
+                _context.Contacts.Add(contact);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("AvailableContacts");
+        }
+
+        [HttpGet]
+        public IActionResult SeeContactRequests()
+        {
+            // getting UserId from Session
+            var userIdString = HttpContext.Session.GetString("UserId");
+
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int userId = int.Parse(userIdString);
+
+                // Finding user
+                var user = _context.Users.FirstOrDefault(c => c.Id == userId);
+
+                if (user != null)
+                {
+                    // Get all incoming contact requests for the current user
+                    var contactRequests = _context.Contacts
+                        .Include(c => c.User) // Include sender user details
+                        .Where(c => c.ContactId == user.Id && c.Status == "Pending")
+                        .ToList();
+
+                    
+                    
+
+                    return View((contactRequests, user));
+                }
+            }
+            TempData["ErrorMessage"] = "You must log in first.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AcceptContactRequest(int contactId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Find the specific contact request
+            var contactRequest = _context.Contacts
+                .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Pending");
+
+            if (contactRequest != null)
+            {
+                // Update the status to Accepted
+                contactRequest.Status = "Accepted";
+
+                var ContactForThisUserToo = new Contact
+                {
+                    UserId = userId,
+                    ContactId = contactId,
+                    Status = "Accepted"
+                };
+
+                _context.Contacts.Add(ContactForThisUserToo);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("SeeContactRequests");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RejectContactRequest(int contactId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Find the specific contact request
+            var contactRequest = _context.Contacts
+                .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Pending");
+
+            if (contactRequest != null)
+            {
+                // Delete the contact request
+                _context.Contacts.Remove(contactRequest);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("SeeContactRequests");
+        }
+
+
+        [HttpGet]
+        public IActionResult SeeContacts()
+        {
+            // getting UserId from Session
+            var userIdString = HttpContext.Session.GetString("UserId");
+
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int userId = int.Parse(userIdString);
+
+                // Finding user
+                var user = _context.Users.FirstOrDefault(c => c.Id == userId);
+
+                if (user != null)
+                {
+                    // Get accepted contacts for the current user
+                    var acceptedContacts = _context.Contacts
+                    .Include(c => c.ContactNavigation)
+                    .Where(c => c.UserId == user.Id && c.Status == "Accepted")
+                    .ToList();
+
+                    return View((acceptedContacts, user));
+                }
+            }
+            TempData["ErrorMessage"] = "You must log in first.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SendMessage(int contactId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Find the specific contact
+            var contact = _context.Contacts
+                .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Accepted");
+
+            if (contact != null)
+            {
+                /*// Update the status to Accepted
+                contactRequest.Status = "Accepted";
+
+                var ContactForThisUserToo = new Contact
+                {
+                    UserId = userId,
+                    ContactId = contactId,
+                    Status = "Accepted"
+                };
+
+                _context.Contacts.Add(ContactForThisUserToo);
+                _context.SaveChanges();*/
+            }
+
+            return RedirectToAction(""); 
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteContact(int contactId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Find the specific contacts
+            var contact1 = _context.Contacts
+                .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Accepted");
+
+            var contact2 = _context.Contacts
+                 .FirstOrDefault(c => c.ContactId == contactId && c.UserId == userId && c.Status == "Accepted");
+
+            if (contact1 != null && contact2!= null )
+            {
+                // Delete the contact request
+                _context.Contacts.Remove(contact1);
+                _context.Contacts.Remove(contact2);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("SeeContacts");
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // GET: Users
         public async Task<IActionResult> Index()
         {

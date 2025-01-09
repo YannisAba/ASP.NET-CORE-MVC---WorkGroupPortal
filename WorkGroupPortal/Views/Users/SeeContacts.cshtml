@@ -1,0 +1,67 @@
+﻿@model (List<WorkGroupPortal.Models.Contact>, WorkGroupPortal.Models.User)
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WorkGroupPortal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Logout">Log Out</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Profile">@Model.Item2.Username Profile</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+
+<div class="container mt-4">
+    <h2>My Contacts</h2>
+
+    @if (Model.Item1.Count == 0)
+    {
+        <p class="text-muted">You have no contacts yet.</p>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var contact in Model.Item1)
+                {
+                    <tr>
+                        <td>@contact.ContactNavigation.Username</td>
+                        <td>@contact.ContactNavigation.Email</td>
+                        <td>
+                            <form asp-action="SendMessage" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="contactId" value="@contact.ContactNavigation.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Send Message</button>
+                            </form>
+                            <form asp-action="DeleteContact" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="contactId" value="@contact.ContactNavigation.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Delete Contact</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

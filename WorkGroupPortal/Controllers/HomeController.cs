@@ -33,7 +33,7 @@ namespace WorkGroupPortal.Controllers
                     return View(user);
                 }
             }
-            // If not found back to login
+            // If not found back to guest
             return View(null);
         }
 

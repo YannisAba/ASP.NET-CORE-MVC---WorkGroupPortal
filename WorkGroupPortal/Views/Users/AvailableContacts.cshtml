@@ -1,0 +1,75 @@
+﻿@model List<WorkGroupPortal.Models.User>
+
+@* @if (ViewData["CurrentUser"] != null)
+{
+    var currentUser = (WorkGroupPortal.Models.User)ViewData["CurrentUser"];
+} *@
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WorkGroupPortal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Logout">Log Out</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Profile">@ViewBag.CurrentUser.Username Profile</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="container mt-4">
+    <h2>Contact Requests</h2>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Username</td>
+                    <td>@user.Email</td>
+                    <td>
+                        @{
+                            var contactStatus = ViewBag.ContactStatuses != null
+                            ? ((Dictionary<int, string>)ViewBag.ContactStatuses).ContainsKey(user.Id)
+                            ? ((Dictionary<int, string>)ViewBag.ContactStatuses)[user.Id]
+                            : "None"
+                            : "None";
+                        }
+                        @contactStatus
+                    </td>
+                    <td>
+                        @if (contactStatus == "Pending")
+                        {
+                            <span class="text-warning">Pending</span>
+                        }
+                        else
+                        {
+                            <form asp-action="SendRequest" method="post">
+                                <input type="hidden" name="contactId" value="@user.Id" />
+                                <button type="submit" class="btn btn-primary btn-sm">Send Request</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

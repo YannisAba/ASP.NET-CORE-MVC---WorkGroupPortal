@@ -4,7 +4,6 @@
     ViewData["Title"] = "Home Page";
 }
 
-
 @if (Model != null)
 {
     <!-- Logged-in user view -->
@@ -68,21 +67,21 @@ else
             <div class="col-md-3 mb-3">
                 <div class="card text-center text-white bg-danger">
                     <div class="card-body">
-                        <p class="card-text">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="AvailableContacts">Add Users</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <div class="card text-center text-white bg-warning">
                     <div class="card-body">
-                        <p class="card-text">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="SeeContactRequests">Contact Requests</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <div class="card text-center text-white bg-success">
                     <div class="card-body">
-                        <p class="card-text">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.</p>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="SeeContacts">My Contacts</a>
                     </div>
                 </div>
             </div>
@@ -96,5 +95,11 @@ else
         </div>
     </div>
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
 
 </main>
