@@ -38,11 +38,14 @@ namespace WorkGroupPortal.Controllers
                         .Where(u => u.Id != user.Id)
                         .ToList();
 
+                    
+
                     // Load all contact statuses for the current user
                     var contactStatuses = _context.Contacts
-                        .Where(c => c.UserId == user.Id && c.Status != "Accepted")
+                        .Where(c => c.UserId == user.Id)
                         .ToDictionary(c => c.ContactId, c => c.Status);
 
+                    
 
                     ViewBag.ContactStatuses = contactStatuses;
                     ViewBag.CurrentUser = user;

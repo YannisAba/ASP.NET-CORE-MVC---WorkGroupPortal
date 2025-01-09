@@ -60,7 +60,11 @@
                         {
                             <span class="text-warning">Pending</span>
                         }
-                        else
+                        else if (contactStatus == "Accepted")
+                        {
+                            <span class="text-success">User is already in your contacts.</span>
+                        }
+                        elsep
                         {
                             <form asp-action="SendRequest" method="post">
                                 <input type="hidden" name="contactId" value="@user.Id" />
