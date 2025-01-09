@@ -64,7 +64,7 @@
                         {
                             <span class="text-success">User is already in your contacts.</span>
                         }
-                        elsep
+                        else
                         {
                             <form asp-action="SendRequest" method="post">
                                 <input type="hidden" name="contactId" value="@user.Id" />

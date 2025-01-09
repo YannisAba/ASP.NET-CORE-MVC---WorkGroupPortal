@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -274,12 +275,192 @@ namespace WorkGroupPortal.Controllers
 
 
 
+        [HttpGet]
+        public IActionResult ManageGroupInvitations()
+        {
+            // getting UserId from Session
+            var userIdString = HttpContext.Session.GetString("UserId");
+
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int userId = int.Parse(userIdString);
+
+                // Finding user
+                var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    // Get group invitations that are Pending
+                    var groupInvitations = _context.GroupInvitations
+                    .Include(gi => gi.Sender)
+                    .Include(gi => gi.Group)
+                    .Where(gi => gi.ReceiverId == user.Id && gi.Status == "Pending")
+                    .ToList();
+
+                    return View((groupInvitations, user));
+                }
+            }
+            TempData["ErrorMessage"] = "You must log in first.";
+            return RedirectToAction("Index", "Home");
+        }
 
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AcceptInvitation(int invitationId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Find the specific invitation
+            var groupInvitation = _context.GroupInvitations
+                .FirstOrDefault(gi => gi.Id == invitationId);
+
+            
+            if (groupInvitation != null)
+            {
+                groupInvitation.Status = "Accepted";
+                groupInvitation.RespondedAt = DateTime.Now;
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("ManageGroupInvitations");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeclineInvitation(int invitationId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            // Find the specific invitation
+            var groupInvitation = _context.GroupInvitations
+                .Include(gi => gi.Group)
+                .FirstOrDefault(gi => gi.Id == invitationId);
 
 
+            if (groupInvitation != null)
+            {
 
 
+                var otherInvitationsForThisGroup = _context.GroupInvitations
+                    .Where(gi => gi.Id != invitationId && gi.GroupId == groupInvitation.GroupId)
+                    .FirstOrDefault();
+
+                if (otherInvitationsForThisGroup != null)
+                {
+                    // Delete this invitation
+                    _context.GroupInvitations.Remove(groupInvitation);
+                    
+                }
+                else
+                {
+                    var groupToDelete = groupInvitation.Group;
+
+                    
+                    _context.GroupInvitations.Remove(groupInvitation);
+                    _context.Groups.Remove(groupToDelete);
+                    
+                }
+                
+
+            }
+
+            _context.SaveChanges();
+            return RedirectToAction("ManageGroupInvitations");
+        }
+
+
+        [HttpGet]
+        public IActionResult SeeGroups()
+        {
+            // getting UserId from Session
+            var userIdString = HttpContext.Session.GetString("UserId");
+
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int userId = int.Parse(userIdString);
+
+                // Finding user
+                var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    // Get groups that user has accepted
+                    var groupsAccepted = _context.GroupInvitations
+                        .Where(gi => (gi.SenderId == user.Id && gi.Status == "Accepted") || (gi.ReceiverId == user.Id && gi.Status == "Accepted"))
+                        .Select(g => g.Group)
+                        .Distinct()
+                        .ToList();
+
+                    return View((groupsAccepted, user));
+                }
+            }
+            TempData["ErrorMessage"] = "You must log in first.";
+            return RedirectToAction("Index", "Home");
+        }
+
+
+        [HttpPost]
+        public IActionResult DeleteGroup(int groupId)
+        {
+            var group = _context.Groups.Include(g => g.GroupInvitations).FirstOrDefault(g => g.Id == groupId);
+
+            if (group != null)
+            {
+                _context.GroupInvitations.RemoveRange(group.GroupInvitations);
+                _context.Groups.Remove(group);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("SeeGroups");
+        }
+
+        [HttpPost]
+        public IActionResult DeleteGroupMember(int groupId, int memberId)
+        {
+            var invitation = _context.GroupInvitations.FirstOrDefault(gi => gi.GroupId == groupId && gi.ReceiverId == memberId);
+
+            if (invitation != null)
+            {
+                _context.GroupInvitations.Remove(invitation);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("SeeGroups");
+        }
+
+        [HttpPost]
+        public IActionResult ExitFromGroup(int groupId)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            var invitation = _context.GroupInvitations.FirstOrDefault(gi => gi.GroupId == groupId && gi.ReceiverId == userId);
+
+            if (invitation != null)
+            {
+                _context.GroupInvitations.Remove(invitation);
+                _context.SaveChanges();
+
+                var remainingInvitations = _context.GroupInvitations.Any(gi => gi.GroupId == groupId);
+
+                if (!remainingInvitations)
+                {
+                    // If no invitations are left, delete the group
+                    var group = _context.Groups.FirstOrDefault(g => g.Id == groupId);
+                    if (group != null)
+                    {
+                        _context.Groups.Remove(group);
+                        _context.SaveChanges();
+                    }
+                }
+                
+            }
+
+            return RedirectToAction("SeeGroups");
+        }
 
 
 
