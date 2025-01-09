@@ -195,32 +195,51 @@ namespace WorkGroupPortal.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SendMessage(int contactId)
+        public IActionResult CreateGroupAndInvite(string groupName, List<int> contactIds)
         {
             var userIdString = HttpContext.Session.GetString("UserId");
             int userId = int.Parse(userIdString);
 
-            // Find the specific contact
-            var contact = _context.Contacts
-                .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Accepted");
-
-            if (contact != null)
+            var group = new Group
             {
-                /*// Update the status to Accepted
-                contactRequest.Status = "Accepted";
+                Name = groupName, // Group name from the form
+                CreatedById = userId,  // User creating the group
+                CreatedAt = DateTime.Now
+                // Set other necessary group properties
+            };
 
-                var ContactForThisUserToo = new Contact
+            // Add the new group to the context
+            _context.Groups.Add(group);
+            _context.SaveChanges();
+
+            // Step 2: Send Invitations to the Contacts
+            foreach (var contactId in contactIds)
+            {
+                // Check if the contact is accepted before sending the invitation
+                var contact = _context.Contacts
+                    .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Accepted");
+
+                if (contact != null)
                 {
-                    UserId = userId,
-                    ContactId = contactId,
-                    Status = "Accepted"
-                };
+                    var groupInvitation = new GroupInvitation
+                    {
+                        SenderId = userId,
+                        ReceiverId = contactId,
+                        GroupId = group.Id,  // Link to the newly created group
+                        Status = "Pending",  // Set the invitation status as "Pending"
+                        CreatedAt = DateTime.Now,
+                        RespondedAt = null   // Initially, no response
+                    };
 
-                _context.Contacts.Add(ContactForThisUserToo);
-                _context.SaveChanges();*/
+                    _context.GroupInvitations.Add(groupInvitation);
+                }
             }
 
-            return RedirectToAction(""); 
+            // Step 3: Save all the changes (group and invitations)
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "Home");
+            /*return RedirectToAction("SeeGroups"); */
         }
 
 
