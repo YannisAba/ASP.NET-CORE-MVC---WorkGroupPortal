@@ -43,7 +43,7 @@
                                 <strong>Created On:</strong> @group.CreatedAt.ToShortDateString() <br />
                                 @* <strong>Members:</strong> @group.GroupInvitations.Count(gi => gi.Status == "Accepted") *@
                             </p>
-                            <a asp-controller="Groups" asp-action="SendMessageToGroup" asp-route-id="@group.Id" class="btn btn-primary">
+                            <a asp-controller="Users" asp-action="SeeMessagesOfGroup" asp-route-id="@group.Id" class="btn btn-primary">
                                 Open Group Chat
                             </a>
                             <!-- Three dots icon for more options -->

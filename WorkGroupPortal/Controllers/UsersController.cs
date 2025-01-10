@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -204,7 +205,7 @@ namespace WorkGroupPortal.Controllers
             var userIdString = HttpContext.Session.GetString("UserId");
             int userId = int.Parse(userIdString);
 
-            var group = new Group
+            var group = new Models.Group
             {
                 Name = groupName, // Group name from the form
                 CreatedById = userId,  // User creating the group
@@ -216,7 +217,7 @@ namespace WorkGroupPortal.Controllers
             _context.Groups.Add(group);
             _context.SaveChanges();
 
-            // Step 2: Send Invitations to the Contacts
+            
             foreach (var contactId in contactIds)
             {
                 // Check if the contact is accepted before sending the invitation
@@ -239,11 +240,10 @@ namespace WorkGroupPortal.Controllers
                 }
             }
 
-            // Step 3: Save all the changes (group and invitations)
             _context.SaveChanges();
 
-            return RedirectToAction("Index", "Home");
-            /*return RedirectToAction("SeeGroups"); */
+            return RedirectToAction("SeeGroups");
+            
         }
 
 
@@ -462,6 +462,95 @@ namespace WorkGroupPortal.Controllers
             return RedirectToAction("SeeGroups");
         }
 
+
+        [HttpGet]
+        public IActionResult SeeMessagesOfGroup(int Id)
+        {
+            // getting UserId from Session
+            var userIdString = HttpContext.Session.GetString("UserId");
+
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int userId = int.Parse(userIdString);
+
+                // Finding user
+                var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    var group = _context.Groups
+                        .Include(gi => gi.GroupInvitations)
+                            .ThenInclude(gir => gir.Receiver)
+                        .Include(m => m.Messages)
+                            .ThenInclude(s => s.Sender)
+                        .FirstOrDefault(g => g.Id == Id);
+
+                    if (group != null)
+                    {
+                            var acceptedMembers = group.GroupInvitations
+                            .Where(gi => gi.Status == "Accepted")
+                            .Select(gi => gi.Receiver)
+                            .ToList();
+
+                        var pendingMembers = group.GroupInvitations
+                            .Where(gi => gi.Status == "Pending")
+                            .Select(gi => gi.Receiver)
+                            .ToList();
+
+                        var messages = group.Messages
+                            .OrderBy(m => m.SentAt)
+                            .Select(m => new MessageViewModel
+                            {
+                                SenderId = m.SenderId,
+                                SenderName = m.Sender.Username,
+                                Content = m.Content,
+                                SentAt = m.SentAt,
+                                IsCurrentUser = m.SenderId == userId
+                            })
+                            .ToList();
+
+                        var viewModel = new SeeMessagesOfGroupViewModel
+                        {
+                            GroupId = group.Id,
+                            GroupName = group.Name,
+                            GroupLeader = group.CreatedBy.Username,
+                            AcceptedMembers = acceptedMembers,
+                            PendingMembers = pendingMembers,
+                            Messages = messages
+                        };
+
+                        return View((viewModel, user));
+                    }
+
+
+
+                }
+                
+            }
+            TempData["ErrorMessage"] = "You must log in first.";
+            return RedirectToAction("Index", "Home");
+
+        }
+
+        [HttpPost]
+        public IActionResult SendMessageToGroup(int groupId, string messageContent)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            int userId = int.Parse(userIdString);
+
+            var message = new Message
+            {
+                GroupId = groupId,
+                SenderId = userId,
+                Content = messageContent,
+                SentAt = DateTime.UtcNow
+            };
+
+            _context.Messages.Add(message);
+            _context.SaveChanges();
+
+            return RedirectToAction("SeeMessagesOfGroup", new { Id = groupId });
+        }
 
 
 
