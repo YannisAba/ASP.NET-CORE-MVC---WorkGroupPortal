@@ -43,9 +43,29 @@
                                 <strong>Created On:</strong> @group.CreatedAt.ToShortDateString() <br />
                                 @* <strong>Members:</strong> @group.GroupInvitations.Count(gi => gi.Status == "Accepted") *@
                             </p>
-                            <a asp-controller="Users" asp-action="SeeMessagesOfGroup" asp-route-id="@group.Id" class="btn btn-primary">
+
+
+
+                            <button type="button" class="btn btn-primary" id="openGroupChatButton_@group.Id" data-id="@group.Id">
                                 Open Group Chat
-                            </a>
+                            </button>
+
+                            <!-- Modal Structure -->
+                            <div class="modal fade" id="groupChatModal_@group.Id" tabindex="-1" aria-labelledby="groupChatModalLabel_@group.Id" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="groupChatModalLabel_@group.Id">Group Chat</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" id="groupMessagesContainer_@group.Id">
+                                            <!-- Content will be loaded here via AJAX -->
+                                            <div id="loadingMessage">Loading...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Three dots icon for more options -->
                             <div class="dropdown mt-2">
                                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -87,12 +107,12 @@
                                             </form>
                                         </li>
                                     }
-                                    
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
+
             }
         </div>
     }
@@ -103,3 +123,88 @@
         </div>
     }
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+@if (ViewBag.AutoOpenGroupChat == "x")
+{
+    <script>
+        $(document).ready(function() {
+            // Wait for 250ms to ensure DOM is ready before triggering the modal
+            setTimeout(function() {
+                // Retrieve the group ID dynamically from ViewBag
+                var groupId = @ViewBag.AutoOpenGroupChatGroupId;
+
+                // Find the button using the dynamic ID
+                var button = $("#openGroupChatButton_" + groupId);
+                if (button.length > 0) {
+                    button.trigger('click'); // Simulate a click on the button to open the modal
+                }
+            }, 250); // Wait 250ms for DOM readiness
+        });
+    </script>
+}
+
+<script>
+    $(document).ready(function() {
+        // When the "Open Group Chat" button is clicked
+        $('.btn.btn-primary').click(function() {
+            var groupId = $(this).data('id'); // Get the group ID from the button's data attribute
+
+            // Show loading message while waiting for the AJAX response
+            $('#groupMessagesContainer_' + groupId).html('<div id="loadingMessage">Loading...</div>');
+
+            // Send AJAX request to get the group messages (partial view)
+            $.ajax({
+                url: '@Url.Action("SeeMessagesOfGroup", "Users")', // Adjust to your controller's action
+                type: 'GET',
+                data: { id: groupId }, // Pass the group ID as a query parameter
+                success: function(response) {
+                    // Replace the loading message with the partial view content
+                    $('#groupMessagesContainer_' + groupId).html(response);
+
+                    // Now show the modal for the specific group
+                    $('#groupChatModal_' + groupId).modal('show');
+                },
+                error: function() {
+                    // Handle errors here
+                    $('#groupMessagesContainer_' + groupId).html('<div class="alert alert-danger">An error occurred while loading the messages.</div>');
+                }
+            });
+        });
+    });
+</script>
+
+@* <script>
+    $(document).ready(function() {
+        // When the "Open Group Chat" button is clicked
+        $('#openGroupChatButton').click(function() {
+            var groupId = $(this).data('id'); // Get the group ID from the button
+
+            // Show loading message while waiting for the AJAX response
+            $('#groupMessagesContainer').html('<div id="loadingMessage">Loading...</div>');
+
+            // Send AJAX request to get the group messages (partial view)
+            $.ajax({
+                url: '@Url.Action("SeeMessagesOfGroup", "Users")', // Adjust the controller name
+                type: 'GET',
+                data: { id: groupId }, // Pass the group ID as a query parameter
+                success: function(response) {
+                    // Replace the loading message with the partial view content
+                    $('#groupMessagesContainer').html(response);
+
+                    // Now show the modal
+                    $('#groupChatModal').modal('show');
+                },
+                error: function() {
+                    // Handle errors here
+                    $('#groupMessagesContainer').html('<div class="alert alert-danger">An error occurred while loading the messages.</div>');
+                }
+            });
+        });
+    });
+
+
+</script> *@

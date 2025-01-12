@@ -1,6 +1,6 @@
 ﻿@model (WorkGroupPortal.Models.SeeMessagesOfGroupViewModel, WorkGroupPortal.Models.User)
 
-<header>
+@* <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container-fluid">
             <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WorkGroupPortal</a>
@@ -20,7 +20,7 @@
             </div>
         </div>
     </nav>
-</header>
+</header> *@
 <div class="group-messages-container">
     <h1>@Model.Item1.GroupName</h1>
 
@@ -44,7 +44,7 @@
 
     <h3>Messages:</h3>
     <div class="messages-area">
-        @if (Model.Item1.Messages.Count == 0)
+        @if (Model.Item1.Messages == null || !Model.Item1.Messages.Any())
         {
             <p>No messages in this group yet.</p>
         }
@@ -67,7 +67,7 @@
         </div>
         <button type="submit" class="btn btn-primary mt-2">Send</button>
     </form>
-    <a asp-controller="Users" asp-action="SeeGroups" class="btn btn-warning mt-2">Back to Groups</a>
+    
 </div>
 
 

@@ -373,7 +373,7 @@ namespace WorkGroupPortal.Controllers
 
 
         [HttpGet]
-        public IActionResult SeeGroups()
+        public IActionResult SeeGroups(int? id)
         {
             // getting UserId from Session
             var userIdString = HttpContext.Session.GetString("UserId");
@@ -387,14 +387,33 @@ namespace WorkGroupPortal.Controllers
 
                 if (user != null)
                 {
-                    // Get groups that user has accepted
-                    var groupsAccepted = _context.GroupInvitations
-                        .Where(gi => (gi.SenderId == user.Id && gi.Status == "Accepted") || (gi.ReceiverId == user.Id && gi.Status == "Accepted"))
-                        .Select(g => g.Group)
-                        .Distinct()
-                        .ToList();
+                    if(!id.HasValue)
+                    {
+                        // Get groups that user has accepted
+                        var groupsAccepted = _context.GroupInvitations
+                            .Where(gi => (gi.SenderId == user.Id && gi.Status == "Accepted") || (gi.ReceiverId == user.Id && gi.Status == "Accepted"))
+                            .Select(g => g.Group)
+                            .Distinct()
+                            .ToList();
 
-                    return View((groupsAccepted, user));
+                        return View((groupsAccepted, user));
+                    }
+                    else
+                    {
+                        // Get groups that user has accepted
+                        var groupsAccepted = _context.GroupInvitations
+                            .Where(gi => (gi.SenderId == user.Id && gi.Status == "Accepted") || (gi.ReceiverId == user.Id && gi.Status == "Accepted"))
+                            .Select(g => g.Group)
+                            .Distinct()
+                            .ToList();
+
+                        ViewBag.AutoOpenGroupChatGroupId = id;
+                        ViewBag.AutoOpenGroupChat = "x";
+                        return View((groupsAccepted, user));
+
+
+                    }
+                    
                 }
             }
             TempData["ErrorMessage"] = "You must log in first.";
@@ -483,14 +502,17 @@ namespace WorkGroupPortal.Controllers
                             .ThenInclude(gir => gir.Receiver)
                         .Include(m => m.Messages)
                             .ThenInclude(s => s.Sender)
+                        .Include(g => g.CreatedBy)
                         .FirstOrDefault(g => g.Id == Id);
 
                     if (group != null)
                     {
-                            var acceptedMembers = group.GroupInvitations
-                            .Where(gi => gi.Status == "Accepted")
-                            .Select(gi => gi.Receiver)
-                            .ToList();
+                        var groupLeader = group.CreatedBy.Username;
+                        
+                        var acceptedMembers = group.GroupInvitations
+                        .Where(gi => gi.Status == "Accepted")
+                        .Select(gi => gi.Receiver)
+                        .ToList();
 
                         var pendingMembers = group.GroupInvitations
                             .Where(gi => gi.Status == "Pending")
@@ -513,13 +535,14 @@ namespace WorkGroupPortal.Controllers
                         {
                             GroupId = group.Id,
                             GroupName = group.Name,
-                            GroupLeader = group.CreatedBy.Username,
+                            GroupLeader = groupLeader,
                             AcceptedMembers = acceptedMembers,
-                            PendingMembers = pendingMembers,
-                            Messages = messages
+                            PendingMembers = pendingMembers /*?? new List<User>()*/,
+                            Messages = messages /*?? new List<MessageViewModel>()*/
                         };
 
-                        return View((viewModel, user));
+                        return PartialView((viewModel, user));
+                        /*return View((viewModel, user));*/
                     }
 
 
@@ -549,7 +572,7 @@ namespace WorkGroupPortal.Controllers
             _context.Messages.Add(message);
             _context.SaveChanges();
 
-            return RedirectToAction("SeeMessagesOfGroup", new { Id = groupId });
+            return RedirectToAction("SeeGroups", new { Id = groupId });
         }
 
 

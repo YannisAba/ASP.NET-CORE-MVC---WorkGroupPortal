@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+/*using Microsoft.AspNetCore.Authentication.Facebook;*/
 using Microsoft.EntityFrameworkCore;
 using WorkGroupPortal.Models;
 
@@ -18,8 +20,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -34,6 +34,9 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseSession();
+
+/*app.UseAuthentication();*/
+
 app.UseAuthorization();
 
 app.MapStaticAssets();

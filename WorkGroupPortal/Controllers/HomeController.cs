@@ -40,6 +40,7 @@ namespace WorkGroupPortal.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+
             return View();
         }
 
