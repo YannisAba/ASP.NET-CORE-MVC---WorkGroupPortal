@@ -436,7 +436,7 @@ namespace WorkGroupPortal.Controllers
             return RedirectToAction("SeeGroups");
         }
 
-        [HttpPost]
+        /*[HttpPost]
         public IActionResult DeleteGroupMember(int groupId, int memberId)
         {
             var invitation = _context.GroupInvitations.FirstOrDefault(gi => gi.GroupId == groupId && gi.ReceiverId == memberId);
@@ -448,7 +448,7 @@ namespace WorkGroupPortal.Controllers
             }
 
             return RedirectToAction("SeeGroups");
-        }
+        }*/
 
         [HttpPost]
         public IActionResult ExitFromGroup(int groupId)

@@ -58,45 +58,63 @@ else
 
 }
 
-
-
 <main>
     <div class="container mt-5">
         <h2 class="mb-4">Activities</h2>
         <div class="row">
-            <div class="col-md-3 mb-3">
-                <div class="card text-center text-white bg-danger">
-                    <div class="card-body">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="AvailableContacts">Add Users</a>
-                    </div>
+            <div class="card" style="width: 16.5rem;">
+                <img class="card-img-top" src="~/photos/multi_user.png" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text">View all signed in users and friend request them</p>
+                    <a class="nav-link text-dark"
+                       style="display: inline-block; background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px; text-align: center; font-weight: bold; text-decoration: none; transition: background-color 0.3s;"
+                       onmouseover="this.style.backgroundColor='#d8d8d8';" onmouseout="this.style.backgroundColor='#e8e8e8';"
+                    asp-area="" asp-controller="Users" asp-action="AvailableContacts">Add Users</a>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card text-center text-white bg-warning">
-                    <div class="card-body">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="SeeContactRequests">Contact Requests</a>
-                    </div>
+            <div class="card" style="width: 16.5rem;">
+                <img class="card-img-top" src="~/photos/friend_requests.png" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">Friend Requests</h5>
+                    <p class="card-text">View friend requests</p>
+                    <a class="nav-link text-dark"
+                       style="display: inline-block; background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px; text-align: center; font-weight: bold; text-decoration: none; transition: background-color 0.3s;"
+                       onmouseover="this.style.backgroundColor='#d8d8d8';" onmouseout="this.style.backgroundColor='#e8e8e8';"
+                    asp-area="" asp-controller="Users" asp-action="SeeContactRequests">View Requests</a>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card text-center text-white bg-success">
-                    <div class="card-body">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="SeeContacts">My Contacts</a>
-                    </div>
+            <div class="card" style="width: 16.5rem;">
+                <img class="card-img-top" src="~/photos/networking.png" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">Your Friends</h5>
+                    <p class="card-text">View all your friends and send them group invitations</p>
+                    <a class="nav-link text-dark"
+                       style="display: inline-block; background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px; text-align: center; font-weight: bold; text-decoration: none; transition: background-color 0.3s;"
+                       onmouseover="this.style.backgroundColor='#d8d8d8';" onmouseout="this.style.backgroundColor='#e8e8e8';"
+                    asp-area="" asp-controller="Users" asp-action="SeeContacts">Send Invitation</a>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card text-center text-white bg-primary">
-                    <div class="card-body">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="ManageGroupInvitations">Manage Group Invitations</a>
-                    </div>
+            <div class="card" style="width: 16.5rem;">
+                <img class="card-img-top" src="~/photos/group_requests.png" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">Group Requests</h5>
+                    <p class="card-text">View all group requests from your friends</p>
+                    <a class="nav-link text-dark"
+                       style="display: inline-block; background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px; text-align: center; font-weight: bold; text-decoration: none; transition: background-color 0.3s;"
+                       onmouseover="this.style.backgroundColor='#d8d8d8';" onmouseout="this.style.backgroundColor='#e8e8e8';"
+                    asp-area="" asp-controller="Users" asp-action="ManageGroupInvitations">Manage Group Invitations</a>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="card text-center text-white bg-primary">
-                    <div class="card-body">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="SeeGroups">Your Groups</a>
-                    </div>
+            <div class="card" style="width: 16.5rem;">
+                <img class="card-img-top" src="~/photos/groups.png" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">Your Groups</h5>
+                    <p class="card-text">View groups and group messages</p>
+                    <a class="nav-link text-dark"
+                       style="display: inline-block; background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px; text-align: center; font-weight: bold; text-decoration: none; transition: background-color 0.3s;"
+                           onmouseover="this.style.backgroundColor='#d8d8d8';" onmouseout="this.style.backgroundColor='#e8e8e8';"
+                    asp-area="" asp-controller="Users" asp-action="SeeGroups">View Groups</a>
                 </div>
             </div>
         </div>
