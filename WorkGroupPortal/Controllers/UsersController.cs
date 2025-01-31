@@ -55,7 +55,7 @@ namespace WorkGroupPortal.Controllers
                     return View(users);
                 }
             }
-            TempData["ErrorMessage"] = "Login First";
+            TempData["ErrorMessage"] = "Login first";
             return RedirectToAction("Index", "Home");
         }
 
@@ -111,7 +111,7 @@ namespace WorkGroupPortal.Controllers
                     return View((contactRequests, user));
                 }
             }
-            TempData["ErrorMessage"] = "Login First";
+            TempData["ErrorMessage"] = "Login first";
             return RedirectToAction("Index", "Home");
         }
 
@@ -191,7 +191,7 @@ namespace WorkGroupPortal.Controllers
                     return View((acceptedContacts, user));
                 }
             }
-            TempData["ErrorMessage"] = "Login First";
+            TempData["ErrorMessage"] = "Login first";
             return RedirectToAction("Index", "Home");
         }
 
@@ -305,7 +305,7 @@ namespace WorkGroupPortal.Controllers
                     return View((groupInvitations, user));
                 }
             }
-            TempData["ErrorMessage"] = "Login First";
+            TempData["ErrorMessage"] = "Login first";
             return RedirectToAction("Index", "Home");
         }
 
@@ -421,7 +421,7 @@ namespace WorkGroupPortal.Controllers
                     
                 }
             }
-            TempData["ErrorMessage"] = "Login First";
+            TempData["ErrorMessage"] = "Login first";
             return RedirectToAction("Index", "Home");
         }
 

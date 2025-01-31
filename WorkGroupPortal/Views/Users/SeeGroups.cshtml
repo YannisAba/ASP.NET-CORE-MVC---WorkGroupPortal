@@ -1,6 +1,9 @@
 ﻿@model (List<WorkGroupPortal.Models.Group>, WorkGroupPortal.Models.User)
 
 @{
+    ViewData["Title"] = "My Groups";
+}
+@{
     var groups = Model.Item1; 
     var user = Model.Item2;   
 }
