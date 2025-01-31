@@ -13,9 +13,9 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Logout">Log Out</a>
                     </li>
-                    <li class="nav-item">
+                    @* <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Profile">@Model.Item2.Username Profile</a>
-                    </li>
+                    </li> *@
                 </ul>
             </div>
         </div>
@@ -66,5 +66,13 @@
                 }
             </tbody>
         </table>
+    }
+    <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="Index">Home Menu</a>
+    <br />
+    @if (TempData["RejectedMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["RejectedMessage"]
+        </div>
     }
 </div>

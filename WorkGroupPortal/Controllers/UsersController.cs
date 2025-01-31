@@ -42,7 +42,7 @@ namespace WorkGroupPortal.Controllers
 
                     
 
-                    // Load all contact statuses for the current user
+                    // Load all contact status
                     var contactStatuses = _context.Contacts
                         .Where(c => c.UserId == user.Id)
                         .ToDictionary(c => c.ContactId, c => c.Status);
@@ -55,7 +55,7 @@ namespace WorkGroupPortal.Controllers
                     return View(users);
                 }
             }
-            TempData["ErrorMessage"] = "You must log in first.";
+            TempData["ErrorMessage"] = "Login First";
             return RedirectToAction("Index", "Home");
         }
 
@@ -108,13 +108,10 @@ namespace WorkGroupPortal.Controllers
                         .Where(c => c.ContactId == user.Id && c.Status == "Pending")
                         .ToList();
 
-                    
-                    
-
                     return View((contactRequests, user));
                 }
             }
-            TempData["ErrorMessage"] = "You must log in first.";
+            TempData["ErrorMessage"] = "Login First";
             return RedirectToAction("Index", "Home");
         }
 
@@ -144,7 +141,7 @@ namespace WorkGroupPortal.Controllers
                 _context.Contacts.Add(ContactForThisUserToo);
                 _context.SaveChanges();
             }
-
+            TempData["SuccessMessage"] = "Contact was added successfully!";
             return RedirectToAction("SeeContactRequests");
         }
 
@@ -165,7 +162,7 @@ namespace WorkGroupPortal.Controllers
                 _context.Contacts.Remove(contactRequest);
                 _context.SaveChanges();
             }
-
+            TempData["RejectMessage"] = "Contact request got rejected!";
             return RedirectToAction("SeeContactRequests");
         }
 
@@ -185,7 +182,7 @@ namespace WorkGroupPortal.Controllers
 
                 if (user != null)
                 {
-                    // Get accepted contacts for the current user
+                    // Get Accepted contacts for the current user
                     var acceptedContacts = _context.Contacts
                     .Include(c => c.ContactNavigation)
                     .Where(c => c.UserId == user.Id && c.Status == "Accepted")
@@ -194,7 +191,7 @@ namespace WorkGroupPortal.Controllers
                     return View((acceptedContacts, user));
                 }
             }
-            TempData["ErrorMessage"] = "You must log in first.";
+            TempData["ErrorMessage"] = "Login First";
             return RedirectToAction("Index", "Home");
         }
 
@@ -205,15 +202,20 @@ namespace WorkGroupPortal.Controllers
             var userIdString = HttpContext.Session.GetString("UserId");
             int userId = int.Parse(userIdString);
 
+            if(contactIds.Count.Equals(0))
+            {
+                TempData["ErrorMessage"] = "You cannot create a group without others!";
+                return RedirectToAction("SeeContacts");
+            }
+
             var group = new Models.Group
             {
-                Name = groupName, // Group name from the form
-                CreatedById = userId,  // User creating the group
+                Name = groupName, 
+                CreatedById = userId,  
                 CreatedAt = DateTime.Now
-                // Set other necessary group properties
             };
 
-            // Add the new group to the context
+            //Group Created
             _context.Groups.Add(group);
             _context.SaveChanges();
 
@@ -230,20 +232,22 @@ namespace WorkGroupPortal.Controllers
                     {
                         SenderId = userId,
                         ReceiverId = contactId,
-                        GroupId = group.Id,  // Link to the newly created group
+                        GroupId = group.Id,  // Link to the created group
                         Status = "Pending",  // Set the invitation status as "Pending"
                         CreatedAt = DateTime.Now,
-                        RespondedAt = null   // Initially, no response
+                        RespondedAt = null   // No response for now
                     };
 
+                    //Group Invitation Created
                     _context.GroupInvitations.Add(groupInvitation);
                 }
             }
 
             _context.SaveChanges();
 
-            return RedirectToAction("SeeGroups");
-            
+            TempData["SuccessMessage"] = "You invited your friends successfully!";
+            return RedirectToAction("SeeContacts");
+
         }
 
 
@@ -254,7 +258,7 @@ namespace WorkGroupPortal.Controllers
             var userIdString = HttpContext.Session.GetString("UserId");
             int userId = int.Parse(userIdString);
 
-            // Find the specific contacts
+            // Find the contacts for both
             var contact1 = _context.Contacts
                 .FirstOrDefault(c => c.ContactId == userId && c.UserId == contactId && c.Status == "Accepted");
 
@@ -263,12 +267,13 @@ namespace WorkGroupPortal.Controllers
 
             if (contact1 != null && contact2!= null )
             {
-                // Delete the contact request
+                // Delete the contacts
                 _context.Contacts.Remove(contact1);
                 _context.Contacts.Remove(contact2);
                 _context.SaveChanges();
             }
 
+            TempData["DeletedMessage"] = "You are not friends anymore!";
             return RedirectToAction("SeeContacts");
         }
 
@@ -300,7 +305,7 @@ namespace WorkGroupPortal.Controllers
                     return View((groupInvitations, user));
                 }
             }
-            TempData["ErrorMessage"] = "You must log in first.";
+            TempData["ErrorMessage"] = "Login First";
             return RedirectToAction("Index", "Home");
         }
 
@@ -324,7 +329,8 @@ namespace WorkGroupPortal.Controllers
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("ManageGroupInvitations");
+            //Group has "Accepted" invitations so it redirects the user to see the group
+            return RedirectToAction("SeeGroups");
         }
 
         [HttpPost]
@@ -342,15 +348,13 @@ namespace WorkGroupPortal.Controllers
 
             if (groupInvitation != null)
             {
-
-
-                var otherInvitationsForThisGroup = _context.GroupInvitations
+                    var otherInvitationsForThisGroup = _context.GroupInvitations
                     .Where(gi => gi.Id != invitationId && gi.GroupId == groupInvitation.GroupId)
                     .FirstOrDefault();
 
                 if (otherInvitationsForThisGroup != null)
                 {
-                    // Delete this invitation
+                    // Delete invitation
                     _context.GroupInvitations.Remove(groupInvitation);
                     
                 }
@@ -358,7 +362,7 @@ namespace WorkGroupPortal.Controllers
                 {
                     var groupToDelete = groupInvitation.Group;
 
-                    
+                    //delete the group too if this is the last invitation
                     _context.GroupInvitations.Remove(groupInvitation);
                     _context.Groups.Remove(groupToDelete);
                     
@@ -367,6 +371,7 @@ namespace WorkGroupPortal.Controllers
 
             }
 
+            TempData["RejectedMessage"] = "You don't want to be a part of this group!";
             _context.SaveChanges();
             return RedirectToAction("ManageGroupInvitations");
         }
@@ -400,7 +405,7 @@ namespace WorkGroupPortal.Controllers
                     }
                     else
                     {
-                        // Get groups that user has accepted
+                        // Get groups that user has accepted with one opened group
                         var groupsAccepted = _context.GroupInvitations
                             .Where(gi => (gi.SenderId == user.Id && gi.Status == "Accepted") || (gi.ReceiverId == user.Id && gi.Status == "Accepted"))
                             .Select(g => g.Group)
@@ -416,18 +421,20 @@ namespace WorkGroupPortal.Controllers
                     
                 }
             }
-            TempData["ErrorMessage"] = "You must log in first.";
+            TempData["ErrorMessage"] = "Login First";
             return RedirectToAction("Index", "Home");
         }
 
 
         [HttpPost]
-        public IActionResult DeleteGroup(int groupId)
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteGroup(int id)
         {
-            var group = _context.Groups.Include(g => g.GroupInvitations).FirstOrDefault(g => g.Id == groupId);
+            var group = _context.Groups.Include(g => g.GroupInvitations).FirstOrDefault(g => g.Id == id);
 
             if (group != null)
             {
+                //Group and invitations for this group deleted
                 _context.GroupInvitations.RemoveRange(group.GroupInvitations);
                 _context.Groups.Remove(group);
                 _context.SaveChanges();
@@ -460,6 +467,7 @@ namespace WorkGroupPortal.Controllers
 
             if (invitation != null)
             {
+                //this invitation is deleted
                 _context.GroupInvitations.Remove(invitation);
                 _context.SaveChanges();
 
@@ -467,7 +475,7 @@ namespace WorkGroupPortal.Controllers
 
                 if (!remainingInvitations)
                 {
-                    // If no invitations are left, delete the group
+                    // If there are no invitations left delete the group too
                     var group = _context.Groups.FirstOrDefault(g => g.Id == groupId);
                     if (group != null)
                     {
@@ -533,12 +541,12 @@ namespace WorkGroupPortal.Controllers
 
                         var viewModel = new SeeMessagesOfGroupViewModel
                         {
-                            GroupId = group.Id,
-                            GroupName = group.Name,
-                            GroupLeader = groupLeader,
-                            AcceptedMembers = acceptedMembers,
-                            PendingMembers = pendingMembers /*?? new List<User>()*/,
-                            Messages = messages /*?? new List<MessageViewModel>()*/
+                            GroupId = group.Id, // group id
+                            GroupName = group.Name, // group name
+                            GroupLeader = groupLeader, // createdby
+                            AcceptedMembers = acceptedMembers, // group invited that accepted
+                            PendingMembers = pendingMembers, // group invited that not accepted yet
+                            Messages = messages // messages
                         };
 
                         return PartialView((viewModel, user));
@@ -550,7 +558,7 @@ namespace WorkGroupPortal.Controllers
                 }
                 
             }
-            TempData["ErrorMessage"] = "You must log in first.";
+            TempData["ErrorMessage"] = "Login First";
             return RedirectToAction("Index", "Home");
 
         }
@@ -569,142 +577,12 @@ namespace WorkGroupPortal.Controllers
                 SentAt = DateTime.UtcNow
             };
 
+            // created message
             _context.Messages.Add(message);
             _context.SaveChanges();
 
+            //redirests to see groups with the id of the group to show the messages of this group
             return RedirectToAction("SeeGroups", new { Id = groupId });
-        }
-
-
-
-        // GET: Users
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Users.ToListAsync());
-        }
-
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
-        }
-
-        // GET: Users/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Username,Email,Password,CreatedAt")] User user)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(user);
-        }
-
-        // GET: Users/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return View(user);
-        }
-
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,Email,Password,CreatedAt")] User user)
-        {
-            if (id != user.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(user);
-        }
-
-        // GET: Users/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
-        }
-
-        // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool UserExists(int id)

@@ -18,9 +18,9 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Logout">Log Out</a>
                     </li>
-                    <li class="nav-item">
+                    @* <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Profile">@user.Username Profile</a>
-                    </li>
+                    </li> *@
                 </ul>
             </div>
         </div>
@@ -46,7 +46,7 @@
 
 
 
-                            <button type="button" class="btn btn-primary" id="openGroupChatButton_@group.Id" data-id="@group.Id">
+                            <button type="button" class="btn btn-outline-success" id="openGroupChatButton_@group.Id" data-id="@group.Id">
                                 Open Group Chat
                             </button>
 
@@ -76,6 +76,7 @@
                                     {
                                         <li>
                                             <form asp-controller="Users" asp-action="DeleteGroup" asp-route-id="@group.Id" method="post" class="dropdown-item">
+                                                @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-link p-0 text-danger">Delete Group</button>
                                             </form>
                                         </li>
@@ -122,6 +123,7 @@
             <p>You haven't created or joined any groups yet.</p>
         </div>
     }
+    <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="Index">Home Menu</a>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -150,7 +152,7 @@
 <script>
     $(document).ready(function() {
         // When the "Open Group Chat" button is clicked
-        $('.btn.btn-primary').click(function() {
+        $('.btn.btn-outline-success').click(function() {
             var groupId = $(this).data('id'); // Get the group ID from the button's data attribute
 
             // Show loading message while waiting for the AJAX response

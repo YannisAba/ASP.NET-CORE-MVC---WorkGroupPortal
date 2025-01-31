@@ -13,9 +13,9 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Logout">Log Out</a>
                     </li>
-                    <li class="nav-item">
+                    @* <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Profile">@Model.Item2.Username Profile</a>
-                    </li>
+                    </li> *@
                 </ul>
             </div>
         </div>
@@ -65,6 +65,12 @@
             </tbody>
         </table>
 
+        @if (TempData["DeletedMessage"] != null)
+        {
+            <div class="alert alert-success" role="alert">
+                @TempData["DeletedMessage"]
+            </div>
+        }
         <button id="toggleFormButton" class="btn btn-info mt-4">Create Group and Invite</button>
 
         <div id="groupFormContainer" class="mt-4" style="display: none;">
@@ -93,6 +99,21 @@
             </form>
         </div>
     }
+    <br>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    <br>
+    <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="Index">Home Menu</a>
 </div>
 
 <script>

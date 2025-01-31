@@ -7,7 +7,6 @@ namespace WorkGroupPortal.Controllers
 {
     public class HomeController : Controller
     {
-        //private readonly ILogger<HomeController> _logger;
         private readonly LabDBContext _context;
 
         public HomeController(LabDBContext context)
@@ -40,7 +39,6 @@ namespace WorkGroupPortal.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-
             return View();
         }
 
@@ -95,19 +93,14 @@ namespace WorkGroupPortal.Controllers
                 return View(user);
             }
 
-            // Check for duplicate Username (optional, if Username is unique)
+            // Check for duplicate Username
             if (_context.Users.Any(u => u.Username == user.Username))
             {
                 ModelState.AddModelError("Username", "Username is already taken.");
                 return View(user);
             }
 
-            // Set additional fields
             user.CreatedAt = DateTime.UtcNow;
-
-            // Hash the password (very important!)
-            //user.Password = PasswordHelper.HashPassword(user.Password);
-            //this needs a new class and method
 
             // Add and save user in the database
             _context.Users.Add(user);
@@ -117,16 +110,15 @@ namespace WorkGroupPortal.Controllers
             return RedirectToAction("Login");
         }
 
-
-
         public IActionResult Logout()
         {
-            // Clear sessio
+            // Clear session
             HttpContext.Session.Clear();
 
-            // Back to Index
+            // Back to Guest
             return RedirectToAction("Index", "Home");
         }
+
 
         public IActionResult Privacy()
         {
